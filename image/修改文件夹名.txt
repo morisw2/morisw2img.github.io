@@ -1,0 +1,70 @@
+# GitHub 如何修改文件夹名
+
+## 推荐方式（本地修改并推送）
+在本地仓库重命名，然后提交并推送到远程，最后在 GitHub 上发起 PR。
+
+```bash
+git checkout -b rename-old-to-new
+git mv old_folder new_folder
+git commit -m "Rename folder: old_folder → new_folder"
+git push -u origin HEAD
+```
+
+## 仅改变大小写（Windows/macOS 注意）
+在大小写不敏感的文件系统上，先用中间名再改回：
+
+```bash
+git mv folderName temp_name
+git commit -m "Temp rename"
+git mv temp_name FolderName
+git commit -m "Case-only rename to FolderName"
+git push
+```
+
+## 通过 GitHub 网页界面（适合少量文件）
+GitHub 没有"重命名文件夹"按钮；需要逐个文件移动到新路径。
+
+1. 打开仓库
+2. 进入目标文件
+3. 点击铅笔图标（编辑）
+4. 在最上方的文件路径输入框中修改路径（例如 `old_folder/file.txt` 改为 `new_folder/file.txt`）
+5. 填写 Commit 信息并提交到新分支或直接到 `main`（建议新分支 + PR）
+
+**注意**：如果文件很多，这个方法很慢且容易出错，不推荐大量文件使用。
+
+## 使用文件管理器或 GitHub Desktop
+在本地文件管理器或 `GitHub Desktop` 中重命名文件夹，然后在仓库根目录：
+
+```bash
+git add -A
+git commit -m "Rename folder via file manager"
+git push
+```
+
+## 批量或复杂重命名（重写历史）
+如果要在历史中把某个文件夹名替换为另一个（影响所有提交），需要用 `git filter-repo`（推荐）或 `git filter-branch`。这会重写历史并需强制推送，风险较高，操作前务必备份并通知协作者。
+
+示例（概要说明）：
+```bash
+git filter-repo --path-rename old_folder/:new_folder/
+git push --force
+```
+
+**仅在你很清楚后果时使用！**
+
+## 注意事项与最佳实践
+
+- **创建分支 + PR**：在非紧急情况下总是用分支来修改并通过 PR 审查，避免直接在 `main` 上做破坏性改动。
+
+- **更新引用**：重命名后记得更新 README、网站路由、脚本、CI 配置或其他引用旧路径的地方。
+
+- **通知协作者**：重命名可能影响他们的本地工作树；在合并前通知团队并在合并后给出同步指南（例如 `git fetch`、`git checkout` 或 `git rebase`）。
+
+- **GitHub Pages / 静态站点**：如果仓库用于 Pages，重命名资源路径后要确认构建和链接是否仍然有效。
+
+- **大文件/大量文件**：优先在本地用脚本或 `git mv` 批量处理，然后一次性提交，避免在网页上逐个提交。
+
+## 快速故障排查
+
+- 重命名前后看 `git status` 与 `git diff --name-status` 确认变动。
+- 如果碰到冲突或丢失文件，先别强推，先在本地恢复或联系协作者。
